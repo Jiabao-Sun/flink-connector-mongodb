@@ -18,7 +18,7 @@
 package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.MongoQueryException;
@@ -62,7 +62,7 @@ public class MongoShardedSplitter implements MongoSplitters.MongoSplitter {
     private MongoShardedSplitter() {}
 
     @Override
-    public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
+    public Collection<MongoSourceSplit> split(MongoSplitContext splitContext) {
         MongoNamespace namespace = splitContext.getMongoNamespace();
         MongoClient mongoClient = splitContext.getMongoClient();
 
@@ -97,11 +97,11 @@ public class MongoShardedSplitter implements MongoSplitters.MongoSplitter {
             return MongoSampleSplitter.INSTANCE.split(splitContext);
         }
 
-        List<MongoScanSourceSplit> sourceSplits = new ArrayList<>(chunks.size());
+        List<MongoSourceSplit> sourceSplits = new ArrayList<>(chunks.size());
         for (int i = 0; i < chunks.size(); i++) {
             BsonDocument chunk = chunks.get(i);
             sourceSplits.add(
-                    new MongoScanSourceSplit(
+                    new MongoSourceSplit(
                             String.format("%s_%d", namespace, i),
                             namespace.getDatabaseName(),
                             namespace.getCollectionName(),

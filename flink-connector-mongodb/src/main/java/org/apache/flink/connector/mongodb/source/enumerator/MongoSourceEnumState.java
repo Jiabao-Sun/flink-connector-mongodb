@@ -20,7 +20,7 @@ package org.apache.flink.connector.mongodb.source.enumerator;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.connector.mongodb.source.enumerator.assigner.MongoSplitAssigner;
 import org.apache.flink.connector.mongodb.source.reader.split.MongoSourceSplitReader;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,13 +43,13 @@ public class MongoSourceEnumState {
     private final List<String> alreadyProcessedCollections;
 
     /** The scan splits in the checkpoint. */
-    private final List<MongoScanSourceSplit> remainingScanSplits;
+    private final List<MongoSourceSplit> remainingScanSplits;
 
     /**
      * The scan splits that the {@link MongoSourceEnumerator} has assigned to {@link
      * MongoSourceSplitReader}s.
      */
-    private final Map<String, MongoScanSourceSplit> assignedScanSplits;
+    private final Map<String, MongoSourceSplit> assignedScanSplits;
 
     /** The pipeline has been triggered and topic partitions have been assigned to readers. */
     private final boolean initialized;
@@ -57,8 +57,8 @@ public class MongoSourceEnumState {
     public MongoSourceEnumState(
             List<String> remainingCollections,
             List<String> alreadyProcessedCollections,
-            List<MongoScanSourceSplit> remainingScanSplits,
-            Map<String, MongoScanSourceSplit> assignedScanSplits,
+            List<MongoSourceSplit> remainingScanSplits,
+            Map<String, MongoSourceSplit> assignedScanSplits,
             boolean initialized) {
         this.remainingCollections = remainingCollections;
         this.alreadyProcessedCollections = alreadyProcessedCollections;
@@ -75,11 +75,11 @@ public class MongoSourceEnumState {
         return alreadyProcessedCollections;
     }
 
-    public List<MongoScanSourceSplit> getRemainingScanSplits() {
+    public List<MongoSourceSplit> getRemainingScanSplits() {
         return remainingScanSplits;
     }
 
-    public Map<String, MongoScanSourceSplit> getAssignedScanSplits() {
+    public Map<String, MongoSourceSplit> getAssignedScanSplits() {
         return assignedScanSplits;
     }
 

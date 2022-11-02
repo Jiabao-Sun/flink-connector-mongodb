@@ -17,7 +17,7 @@
 
 package org.apache.flink.connector.mongodb.source.enumerator;
 
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 import org.apache.flink.util.TestLoggerExtension;
 
 import org.bson.BsonDocument;
@@ -46,10 +46,10 @@ public class MongoSourceEnumStateSerializerTest {
         boolean initialized = false;
         List<String> remainingCollections = Arrays.asList("db.remains0", "db.remains1");
         List<String> alreadyProcessedCollections = Arrays.asList("db.processed0", "db.processed1");
-        List<MongoScanSourceSplit> remainingScanSplits = new ArrayList<>();
+        List<MongoSourceSplit> remainingScanSplits = new ArrayList<>();
         remainingScanSplits.add(createSourceSplit(0));
         remainingScanSplits.add(createSourceSplit(1));
-        Map<String, MongoScanSourceSplit> assignedScanSplits = new HashMap<>();
+        Map<String, MongoSourceSplit> assignedScanSplits = new HashMap<>();
         assignedScanSplits.put("split2", createSourceSplit(2));
 
         MongoSourceEnumState state =
@@ -73,8 +73,8 @@ public class MongoSourceEnumStateSerializerTest {
         assertNotSame(state, state1);
     }
 
-    private MongoScanSourceSplit createSourceSplit(int index) {
-        return new MongoScanSourceSplit(
+    private MongoSourceSplit createSourceSplit(int index) {
+        return new MongoSourceSplit(
                 "split" + index,
                 "db",
                 "coll",

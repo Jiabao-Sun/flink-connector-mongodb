@@ -26,7 +26,6 @@ import org.apache.flink.connector.base.source.reader.splitreader.SplitsAddition;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitsChange;
 import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 import org.apache.flink.util.CollectionUtil;
 
@@ -46,7 +45,7 @@ import java.util.List;
 
 import static org.apache.flink.connector.mongodb.common.utils.MongoUtils.project;
 
-/** An split reader implements {@link SplitReader} for {@link MongoScanSourceSplit}. */
+/** An split reader implements {@link SplitReader} for {@link MongoSourceSplit}. */
 @Internal
 public class MongoScanSourceSplitReader implements MongoSourceSplitReader<MongoSourceSplit> {
 
@@ -62,7 +61,7 @@ public class MongoScanSourceSplitReader implements MongoSourceSplitReader<MongoS
     private boolean finished = false;
     private MongoClient mongoClient;
     private MongoCursor<BsonDocument> currentCursor;
-    private MongoScanSourceSplit currentSplit;
+    private MongoSourceSplit currentSplit;
 
     public MongoScanSourceSplitReader(
             MongoConnectionOptions connectionOptions,
@@ -125,15 +124,7 @@ public class MongoScanSourceSplitReader implements MongoSourceSplitReader<MongoS
                             splitsChanges.getClass()));
         }
 
-        MongoSourceSplit sourceSplit = splitsChanges.splits().get(0);
-        if (!(sourceSplit instanceof MongoScanSourceSplit)) {
-            throw new UnsupportedOperationException(
-                    String.format(
-                            "The SourceSplit type of %s is not supported.",
-                            sourceSplit.getClass()));
-        }
-
-        this.currentSplit = (MongoScanSourceSplit) sourceSplit;
+        this.currentSplit = splitsChanges.splits().get(0);
         this.finished = false;
     }
 

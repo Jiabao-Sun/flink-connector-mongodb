@@ -64,41 +64,34 @@ public class MongoSourceSplitSerializer implements SimpleVersionedSerializer<Mon
         }
     }
 
-    public void serializeMongoSplit(DataOutputStream out, MongoSourceSplit obj) throws IOException {
-        if (obj instanceof MongoScanSourceSplit) {
-            MongoScanSourceSplit split = (MongoScanSourceSplit) obj;
-            out.writeInt(SCAN_SPLIT_FLAG);
-            out.writeUTF(split.splitId());
-            out.writeUTF(split.getDatabase());
-            out.writeUTF(split.getCollection());
-            out.writeUTF(split.getMin().toJson());
-            out.writeUTF(split.getMax().toJson());
-            out.writeUTF(split.getHint().toJson());
-        }
+    public void serializeMongoSplit(DataOutputStream out, MongoSourceSplit split)
+            throws IOException {
+        out.writeInt(SCAN_SPLIT_FLAG);
+        out.writeUTF(split.splitId());
+        out.writeUTF(split.getDatabase());
+        out.writeUTF(split.getCollection());
+        out.writeUTF(split.getMin().toJson());
+        out.writeUTF(split.getMax().toJson());
+        out.writeUTF(split.getHint().toJson());
     }
 
     public MongoSourceSplit deserializeMongoSourceSplit(int version, DataInputStream in)
             throws IOException {
         int splitKind = in.readInt();
         if (splitKind == SCAN_SPLIT_FLAG) {
-            return deserializeMongoScanSourceSplit(version, in);
+            switch (version) {
+                case 0:
+                    String splitId = in.readUTF();
+                    String database = in.readUTF();
+                    String collection = in.readUTF();
+                    BsonDocument min = BsonDocument.parse(in.readUTF());
+                    BsonDocument max = BsonDocument.parse(in.readUTF());
+                    BsonDocument hint = BsonDocument.parse(in.readUTF());
+                    return new MongoSourceSplit(splitId, database, collection, min, max, hint);
+                default:
+                    throw new IOException("Unknown version: " + version);
+            }
         }
         throw new IOException("Unknown split kind: " + splitKind);
-    }
-
-    public MongoScanSourceSplit deserializeMongoScanSourceSplit(int version, DataInputStream in)
-            throws IOException {
-        switch (version) {
-            case 0:
-                String splitId = in.readUTF();
-                String database = in.readUTF();
-                String collection = in.readUTF();
-                BsonDocument min = BsonDocument.parse(in.readUTF());
-                BsonDocument max = BsonDocument.parse(in.readUTF());
-                BsonDocument hint = BsonDocument.parse(in.readUTF());
-                return new MongoScanSourceSplit(splitId, database, collection, min, max, hint);
-            default:
-                throw new IOException("Unknown version: " + version);
-        }
     }
 }

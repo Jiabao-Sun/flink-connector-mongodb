@@ -27,17 +27,12 @@ public class MongoSourceSplitState {
     }
 
     public MongoSourceSplit toMongoSourceSplit() {
-        if (split instanceof MongoScanSourceSplit) {
-            MongoScanSourceSplit scanSplit = (MongoScanSourceSplit) split;
-            return new MongoScanSourceSplit(
-                    scanSplit.splitId(),
-                    scanSplit.getDatabase(),
-                    scanSplit.getCollection(),
-                    scanSplit.getMin(),
-                    scanSplit.getMax(),
-                    scanSplit.getHint());
-        } else {
-            throw new IllegalStateException("Unknown split type");
-        }
+        return new MongoSourceSplit(
+                split.splitId(),
+                split.getDatabase(),
+                split.getCollection(),
+                split.getMin(),
+                split.getMax(),
+                split.getHint());
     }
 }

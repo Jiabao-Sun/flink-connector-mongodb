@@ -18,7 +18,7 @@
 package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import org.bson.BsonDocument;
 
@@ -39,9 +39,9 @@ public class MongoSingleSplitter implements MongoSplitters.MongoSplitter {
     private MongoSingleSplitter() {}
 
     @Override
-    public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
-        MongoScanSourceSplit singleSplit =
-                new MongoScanSourceSplit(
+    public Collection<MongoSourceSplit> split(MongoSplitContext splitContext) {
+        MongoSourceSplit singleSplit =
+                new MongoSourceSplit(
                         splitContext.getMongoNamespace().getFullName(),
                         splitContext.getDatabaseName(),
                         splitContext.getCollectionName(),

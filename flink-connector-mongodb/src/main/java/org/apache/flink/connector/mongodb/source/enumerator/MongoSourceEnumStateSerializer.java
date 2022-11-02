@@ -18,7 +18,7 @@
 package org.apache.flink.connector.mongodb.source.enumerator;
 
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplitSerializer;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 
@@ -86,10 +86,10 @@ public class MongoSourceEnumStateSerializer
                 DataInputStream in = new DataInputStream(bais)) {
             List<String> remainingCollections = deserializeList(in, DataInput::readUTF);
             List<String> alreadyProcessedCollections = deserializeList(in, DataInput::readUTF);
-            List<MongoScanSourceSplit> remainingScanSplits =
+            List<MongoSourceSplit> remainingScanSplits =
                     deserializeList(in, i -> deserializeMongoScanSourceSplit(version, i));
 
-            Map<String, MongoScanSourceSplit> assignedScanSplits =
+            Map<String, MongoSourceSplit> assignedScanSplits =
                     deserializeMap(
                             in,
                             DataInput::readUTF,
@@ -106,9 +106,8 @@ public class MongoSourceEnumStateSerializer
         }
     }
 
-    private MongoScanSourceSplit deserializeMongoScanSourceSplit(int version, DataInputStream in)
+    private MongoSourceSplit deserializeMongoScanSourceSplit(int version, DataInputStream in)
             throws IOException {
-        return (MongoScanSourceSplit)
-                MongoSourceSplitSerializer.INSTANCE.deserializeMongoSourceSplit(version, in);
+        return MongoSourceSplitSerializer.INSTANCE.deserializeMongoSourceSplit(version, in);
     }
 }

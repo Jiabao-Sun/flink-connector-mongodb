@@ -22,7 +22,6 @@ import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
 import org.apache.flink.connector.mongodb.source.enumerator.MongoSourceEnumState;
 import org.apache.flink.connector.mongodb.source.enumerator.splitter.MongoSplitters;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import com.mongodb.MongoNamespace;
@@ -37,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** The split assigner for {@link MongoScanSourceSplit}. */
+/** The split assigner for {@link MongoSourceSplit}. */
 @Internal
 public class MongoScanSplitAssigner implements MongoSplitAssigner {
 
@@ -49,8 +48,8 @@ public class MongoScanSplitAssigner implements MongoSplitAssigner {
 
     private final LinkedList<String> remainingCollections;
     private final List<String> alreadyProcessedCollections;
-    private final List<MongoScanSourceSplit> remainingScanSplits;
-    private final Map<String, MongoScanSourceSplit> assignedScanSplits;
+    private final List<MongoSourceSplit> remainingScanSplits;
+    private final Map<String, MongoSourceSplit> assignedScanSplits;
     private boolean initialized;
 
     public MongoScanSplitAssigner(
@@ -85,8 +84,8 @@ public class MongoScanSplitAssigner implements MongoSplitAssigner {
     public Optional<MongoSourceSplit> getNext() {
         if (!remainingScanSplits.isEmpty()) {
             // return remaining splits firstly
-            Iterator<MongoScanSourceSplit> iterator = remainingScanSplits.iterator();
-            MongoScanSourceSplit split = iterator.next();
+            Iterator<MongoSourceSplit> iterator = remainingScanSplits.iterator();
+            MongoSourceSplit split = iterator.next();
             iterator.remove();
             assignedScanSplits.put(split.splitId(), split);
             return Optional.of(split);
@@ -95,7 +94,7 @@ public class MongoScanSplitAssigner implements MongoSplitAssigner {
             String nextCollection = remainingCollections.pollFirst();
             if (nextCollection != null) {
                 // split the given collection into chunks (scan splits)
-                Collection<MongoScanSourceSplit> splits =
+                Collection<MongoSourceSplit> splits =
                         mongoSplitters.split(new MongoNamespace(nextCollection));
                 remainingScanSplits.addAll(splits);
                 alreadyProcessedCollections.add(nextCollection);
@@ -109,12 +108,10 @@ public class MongoScanSplitAssigner implements MongoSplitAssigner {
     @Override
     public void addSplitsBack(Collection<MongoSourceSplit> splits) {
         for (MongoSourceSplit split : splits) {
-            if (split instanceof MongoScanSourceSplit) {
-                remainingScanSplits.add((MongoScanSourceSplit) split);
-                // we should remove the add-backed splits from the assigned list,
-                // because they are failed
-                assignedScanSplits.remove(split.splitId());
-            }
+            remainingScanSplits.add(split);
+            // we should remove the add-backed splits from the assigned list,
+            // because they are failed
+            assignedScanSplits.remove(split.splitId());
         }
     }
 

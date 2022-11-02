@@ -21,7 +21,7 @@ import org.apache.flink.connector.mongodb.common.utils.MongoUtils;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
 import org.apache.flink.connector.mongodb.source.enumerator.splitter.MongoShardedSplitter;
 import org.apache.flink.connector.mongodb.source.enumerator.splitter.MongoSplitContext;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 import org.apache.flink.util.TestLoggerExtension;
 
 import com.mongodb.MongoNamespace;
@@ -85,11 +85,11 @@ public class MongoShardedSplitterTest {
                         namespace,
                         mockCollStats());
 
-        List<MongoScanSourceSplit> expected = new ArrayList<>();
+        List<MongoSourceSplit> expected = new ArrayList<>();
         for (int i = 0; i < mockChunksData.size(); i++) {
             BsonDocument mockChunkData = mockChunksData.get(i);
             expected.add(
-                    new MongoScanSourceSplit(
+                    new MongoSourceSplit(
                             String.format("%s_%d", namespace, i),
                             namespace.getDatabaseName(),
                             namespace.getCollectionName(),
@@ -106,7 +106,7 @@ public class MongoShardedSplitterTest {
 
             util.when(() -> MongoUtils.isValidShardedCollection(any())).thenReturn(true);
 
-            Collection<MongoScanSourceSplit> actual =
+            Collection<MongoSourceSplit> actual =
                     MongoShardedSplitter.INSTANCE.split(splitContext);
             assertThat(actual, equalTo(expected));
         }

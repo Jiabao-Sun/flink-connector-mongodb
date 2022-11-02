@@ -22,7 +22,6 @@ import org.apache.flink.annotation.Internal;
 import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
 import org.apache.flink.connector.mongodb.common.utils.MongoUtils;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import com.mongodb.MongoNamespace;
@@ -61,7 +60,7 @@ public class MongoSplitters implements Serializable, Closeable {
         this.mongoClient = MongoClients.create(connectionOptions.getUri());
     }
 
-    public Collection<MongoScanSourceSplit> split(MongoNamespace namespace) {
+    public Collection<MongoSourceSplit> split(MongoNamespace namespace) {
         BsonDocument collStats = MongoUtils.collStats(mongoClient, namespace);
         if (!isCommandSucceed(collStats)) {
             LOG.error(
@@ -105,6 +104,6 @@ public class MongoSplitters implements Serializable, Closeable {
 
     /** Mongo Splitter to split a collection into multiple splits. */
     public interface MongoSplitter {
-        Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext);
+        Collection<MongoSourceSplit> split(MongoSplitContext splitContext);
     }
 }

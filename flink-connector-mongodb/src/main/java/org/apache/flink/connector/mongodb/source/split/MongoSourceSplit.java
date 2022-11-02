@@ -20,22 +20,67 @@ package org.apache.flink.connector.mongodb.source.split;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.connector.source.SourceSplit;
 
+import org.bson.BsonDocument;
+
 import java.io.Serializable;
 import java.util.Objects;
 
-/** A super class of {@link SourceSplit} implementation for a MongoDB's source split. */
+/** A {@link SourceSplit} implementation for a MongoDB's partition. */
 @Internal
-public abstract class MongoSourceSplit implements SourceSplit, Serializable {
+public class MongoSourceSplit implements SourceSplit, Serializable {
 
-    protected final String splitId;
+    private static final long serialVersionUID = 1L;
 
-    protected MongoSourceSplit(String splitId) {
+    private final String splitId;
+
+    private final String database;
+
+    private final String collection;
+
+    private final BsonDocument min;
+
+    private final BsonDocument max;
+
+    private final BsonDocument hint;
+
+    public MongoSourceSplit(
+            String splitId,
+            String database,
+            String collection,
+            BsonDocument min,
+            BsonDocument max,
+            BsonDocument hint) {
         this.splitId = splitId;
+        this.database = database;
+        this.collection = collection;
+        this.min = min;
+        this.max = max;
+        this.hint = hint;
     }
 
     @Override
     public String splitId() {
         return splitId;
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public String getCollection() {
+        return collection;
+    }
+
+    public BsonDocument getMin() {
+        return min;
+    }
+
+    public BsonDocument getMax() {
+        return max;
+    }
+
+    public BsonDocument getHint() {
+        return hint;
     }
 
     @Override
@@ -46,12 +91,17 @@ public abstract class MongoSourceSplit implements SourceSplit, Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        MongoSourceSplit that = (MongoSourceSplit) o;
-        return Objects.equals(splitId, that.splitId);
+        MongoSourceSplit split = (MongoSourceSplit) o;
+        return Objects.equals(splitId, split.splitId)
+                && Objects.equals(database, split.database)
+                && Objects.equals(collection, split.collection)
+                && Objects.equals(min, split.min)
+                && Objects.equals(max, split.max)
+                && Objects.equals(hint, split.hint);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(splitId);
+        return Objects.hash(splitId, database, collection, min, max, hint);
     }
 }

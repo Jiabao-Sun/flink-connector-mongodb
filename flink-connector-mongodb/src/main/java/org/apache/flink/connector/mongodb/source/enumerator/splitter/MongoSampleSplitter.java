@@ -19,7 +19,7 @@ package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.model.Aggregates;
@@ -68,7 +68,7 @@ public class MongoSampleSplitter implements MongoSplitters.MongoSplitter {
     private MongoSampleSplitter() {}
 
     @Override
-    public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
+    public Collection<MongoSourceSplit> split(MongoSplitContext splitContext) {
         MongoReadOptions readOptions = splitContext.getReadOptions();
         MongoNamespace namespace = splitContext.getMongoNamespace();
 
@@ -101,7 +101,7 @@ public class MongoSampleSplitter implements MongoSplitters.MongoSplitter {
                         .allowDiskUse(true)
                         .into(new ArrayList<>());
 
-        List<MongoScanSourceSplit> sourceSplits = new ArrayList<>();
+        List<MongoSourceSplit> sourceSplits = new ArrayList<>();
         BsonDocument min = new BsonDocument(ID_FIELD, BSON_MIN_KEY);
         int splitNum = 0;
         for (int i = 0; i < samples.size(); i++) {
@@ -118,9 +118,9 @@ public class MongoSampleSplitter implements MongoSplitters.MongoSplitter {
         return sourceSplits;
     }
 
-    private MongoScanSourceSplit createSplit(
+    private MongoSourceSplit createSplit(
             MongoNamespace ns, int index, BsonDocument min, BsonDocument max) {
-        return new MongoScanSourceSplit(
+        return new MongoSourceSplit(
                 String.format("%s_%d", ns, index),
                 ns.getDatabaseName(),
                 ns.getCollectionName(),

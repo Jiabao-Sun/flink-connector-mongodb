@@ -19,7 +19,7 @@ package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
 import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoNamespace;
@@ -63,7 +63,7 @@ public class MongoSplitVectorSplitter implements MongoSplitters.MongoSplitter {
     private MongoSplitVectorSplitter() {}
 
     @Override
-    public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
+    public Collection<MongoSourceSplit> split(MongoSplitContext splitContext) {
         MongoClient mongoClient = splitContext.getMongoClient();
         MongoNamespace namespace = splitContext.getMongoNamespace();
         MongoReadOptions readOptions = splitContext.getReadOptions();
@@ -106,13 +106,13 @@ public class MongoSplitVectorSplitter implements MongoSplitters.MongoSplitter {
         // Complete right bound: (lastKey, maxKey)
         splitKeys.add(new BsonDocument(ID_FIELD, BSON_MAX_KEY));
 
-        List<MongoScanSourceSplit> sourceSplits = new ArrayList<>(splitKeys.size());
+        List<MongoSourceSplit> sourceSplits = new ArrayList<>(splitKeys.size());
 
         BsonValue lowerValue = BSON_MIN_KEY;
         for (int i = 0; i < splitKeys.size(); i++) {
             BsonValue splitKeyValue = splitKeys.get(i).asDocument().get(ID_FIELD);
             sourceSplits.add(
-                    new MongoScanSourceSplit(
+                    new MongoSourceSplit(
                             String.format("%s_%d", namespace, i),
                             namespace.getDatabaseName(),
                             namespace.getCollectionName(),

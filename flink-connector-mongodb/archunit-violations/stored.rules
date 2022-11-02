@@ -1,10 +1,10 @@
 #
-#Wed Nov 02 20:18:11 CST 2022
-Production\ code\ must\ not\ call\ methods\ annotated\ with\ @VisibleForTesting=f871efde-12fe-46a5-9b10-11382284683f
-Options\ for\ connectors\ and\ formats\ should\ reside\ in\ a\ consistent\ package\ and\ be\ public\ API.=d5033bdc-beb6-4505-9fd1-ab50e6c4be20
-Tests\ inheriting\ from\ AbstractTestBase\ should\ have\ name\ ending\ with\ ITCase=07a10766-610a-4f6d-9b7f-82d523e68bb6
-Classes\ in\ API\ packages\ should\ have\ at\ least\ one\ API\ visibility\ annotation.=ae2f06aa-8fb6-4585-a50c-ffe88f59697d
-Return\ and\ argument\ types\ of\ methods\ annotated\ with\ @PublicEvolving\ must\ be\ annotated\ with\ @Public(Evolving).=bf400375-9b08-442c-80c1-051333988494
-Return\ and\ argument\ types\ of\ methods\ annotated\ with\ @Public\ must\ be\ annotated\ with\ @Public.=ed03507c-2a0e-4dc2-b0c6-b90a8469bb7c
-ITCASE\ tests\ should\ use\ a\ MiniCluster\ resource\ or\ extension=0339fa9f-980e-4b71-a187-dde3c2e4d22d
-Connector\ production\ code\ must\ not\ depend\ on\ non-public\ API\ outside\ of\ connector\ packages=54355260-ce16-4e0e-9768-00cb07fadf7e
+#Wed Nov 02 23:01:14 CST 2022
+Production\ code\ must\ not\ call\ methods\ annotated\ with\ @VisibleForTesting=45acb7dd-e309-4612-a27c-445b2f844f2d
+Options\ for\ connectors\ and\ formats\ should\ reside\ in\ a\ consistent\ package\ and\ be\ public\ API.=d2a2d0e2-af88-4e8b-b112-44eb8d444a9e
+Tests\ inheriting\ from\ AbstractTestBase\ should\ have\ name\ ending\ with\ ITCase=4cd0b421-12ff-4443-a025-d6fb8cb18709
+Return\ and\ argument\ types\ of\ methods\ annotated\ with\ @PublicEvolving\ must\ be\ annotated\ with\ @Public(Evolving).=f40cff8b-2aab-49fb-a517-a72af7045ef7
+Classes\ in\ API\ packages\ should\ have\ at\ least\ one\ API\ visibility\ annotation.=53f65283-5923-4ce2-b598-eefeea11d2bf
+ITCASE\ tests\ should\ use\ a\ MiniCluster\ resource\ or\ extension=d4c5b845-6769-4ce6-8c97-08f84f7de838
+Return\ and\ argument\ types\ of\ methods\ annotated\ with\ @Public\ must\ be\ annotated\ with\ @Public.=9f2981f4-3d79-4015-9f57-8198b584cfc2
+Connector\ production\ code\ must\ not\ depend\ on\ non-public\ API\ outside\ of\ connector\ packages=2788a12e-1cdb-48ae-a5ae-72e92fe76290
