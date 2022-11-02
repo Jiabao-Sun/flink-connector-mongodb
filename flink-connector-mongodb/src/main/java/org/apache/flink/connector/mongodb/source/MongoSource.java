@@ -21,9 +21,7 @@ import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.api.connector.source.Source;
-import org.apache.flink.api.connector.source.SourceReader;
 import org.apache.flink.api.connector.source.SourceReaderContext;
-import org.apache.flink.api.connector.source.SplitEnumerator;
 import org.apache.flink.api.connector.source.SplitEnumeratorContext;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.connector.base.source.reader.RecordsWithSplitIds;
@@ -42,7 +40,6 @@ import org.apache.flink.connector.mongodb.source.reader.emitter.MongoRecordEmitt
 import org.apache.flink.connector.mongodb.source.reader.split.MongoScanSourceSplitReader;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplit;
 import org.apache.flink.connector.mongodb.source.split.MongoSourceSplitSerializer;
-import org.apache.flink.core.io.SimpleVersionedSerializer;
 
 import org.bson.BsonDocument;
 
@@ -126,7 +123,7 @@ public class MongoSource<OUT>
     }
 
     @Override
-    public SourceReader<OUT, MongoSourceSplit> createReader(SourceReaderContext readerContext) {
+    public MongoSourceReader<OUT> createReader(SourceReaderContext readerContext) {
         FutureCompletingBlockingQueue<RecordsWithSplitIds<BsonDocument>> elementsQueue =
                 new FutureCompletingBlockingQueue<>();
 
@@ -147,7 +144,7 @@ public class MongoSource<OUT>
     }
 
     @Override
-    public SplitEnumerator<MongoSourceSplit, MongoSourceEnumState> createEnumerator(
+    public MongoSourceEnumerator createEnumerator(
             SplitEnumeratorContext<MongoSourceSplit> enumContext) {
         MongoSourceEnumState initialState = MongoSourceEnumState.initialState();
         MongoSplitAssigner splitAssigner =
@@ -157,7 +154,7 @@ public class MongoSource<OUT>
     }
 
     @Override
-    public SplitEnumerator<MongoSourceSplit, MongoSourceEnumState> restoreEnumerator(
+    public MongoSourceEnumerator restoreEnumerator(
             SplitEnumeratorContext<MongoSourceSplit> enumContext, MongoSourceEnumState checkpoint) {
         MongoSplitAssigner splitAssigner =
                 new MongoScanSplitAssigner(
@@ -166,12 +163,12 @@ public class MongoSource<OUT>
     }
 
     @Override
-    public SimpleVersionedSerializer<MongoSourceSplit> getSplitSerializer() {
+    public MongoSourceSplitSerializer getSplitSerializer() {
         return MongoSourceSplitSerializer.INSTANCE;
     }
 
     @Override
-    public SimpleVersionedSerializer<MongoSourceEnumState> getEnumeratorCheckpointSerializer() {
+    public MongoSourceEnumStateSerializer getEnumeratorCheckpointSerializer() {
         return MongoSourceEnumStateSerializer.INSTANCE;
     }
 

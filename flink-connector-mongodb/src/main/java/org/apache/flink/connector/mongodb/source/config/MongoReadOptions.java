@@ -24,15 +24,6 @@ import org.apache.flink.connector.mongodb.source.enumerator.splitter.PartitionSt
 import java.io.Serializable;
 import java.util.Objects;
 
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_CURSOR_BATCH_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_CURSOR_NO_TIMEOUT;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_FETCH_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_SAMPLES;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_STRATEGY;
-import static org.apache.flink.util.Preconditions.checkArgument;
-import static org.apache.flink.util.Preconditions.checkNotNull;
-
 /** The configuration class for MongoDB source. */
 @PublicEvolving
 public class MongoReadOptions implements Serializable {
@@ -51,7 +42,7 @@ public class MongoReadOptions implements Serializable {
 
     private final int samplesPerPartition;
 
-    private MongoReadOptions(
+    MongoReadOptions(
             int fetchSize,
             int cursorBatchSize,
             boolean noCursorTimeout,
@@ -118,107 +109,5 @@ public class MongoReadOptions implements Serializable {
 
     public static MongoReadOptionsBuilder builder() {
         return new MongoReadOptionsBuilder();
-    }
-
-    /** Builder for {@link MongoReadOptions}. */
-    public static class MongoReadOptionsBuilder {
-        private int fetchSize = SCAN_FETCH_SIZE.defaultValue();
-        private int cursorBatchSize = SCAN_CURSOR_BATCH_SIZE.defaultValue();
-        private boolean noCursorTimeout = SCAN_CURSOR_NO_TIMEOUT.defaultValue();
-        private PartitionStrategy partitionStrategy = SCAN_PARTITION_STRATEGY.defaultValue();
-        private MemorySize partitionSize = SCAN_PARTITION_SIZE.defaultValue();
-        private int samplesPerPartition = SCAN_PARTITION_SAMPLES.defaultValue();
-
-        /**
-         * Sets the number of documents should be fetched per round-trip when reading.
-         *
-         * @param fetchSize the number of documents should be fetched per round-trip when reading.
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setFetchSize(int fetchSize) {
-            checkArgument(fetchSize > 0, "The fetch size must be larger than 0.");
-            this.fetchSize = fetchSize;
-            return this;
-        }
-
-        /**
-         * Sets the batch size of MongoDB find cursor.
-         *
-         * @param cursorBatchSize the max batch size of find cursor.
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setCursorBatchSize(int cursorBatchSize) {
-            checkArgument(
-                    cursorBatchSize >= 0,
-                    "The cursor batch size must be larger than or equal to 0.");
-            this.cursorBatchSize = cursorBatchSize;
-            return this;
-        }
-
-        /**
-         * Set this option to true to prevent cursor timeout (10 minutes).
-         *
-         * @param noCursorTimeout Set this option to true to prevent cursor timeout (10 minutes)
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setNoCursorTimeout(boolean noCursorTimeout) {
-            this.noCursorTimeout = noCursorTimeout;
-            return this;
-        }
-
-        /**
-         * Sets the partition strategy.
-         *
-         * @param partitionStrategy the strategy of a partition.
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setPartitionStrategy(PartitionStrategy partitionStrategy) {
-            checkNotNull(partitionStrategy, "The partition strategy must not be null.");
-            this.partitionStrategy = partitionStrategy;
-            return this;
-        }
-
-        /**
-         * Sets the partition size of MongoDB split.
-         *
-         * @param partitionSize the memory size of a partition.
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setPartitionSize(MemorySize partitionSize) {
-            checkNotNull(partitionSize, "The partition size must not be null");
-            checkArgument(
-                    partitionSize.getMebiBytes() >= 1,
-                    "The partition size must be larger than or equals to 1mb.");
-            this.partitionSize = partitionSize;
-            return this;
-        }
-
-        /**
-         * Sets the partition size of MongoDB split.
-         *
-         * @param samplesPerPartition the memory size of a partition.
-         * @return this builder
-         */
-        public MongoReadOptionsBuilder setSamplesPerPartition(int samplesPerPartition) {
-            checkArgument(
-                    samplesPerPartition > 0, "The samples per partition must be larger than 0.");
-            this.samplesPerPartition = samplesPerPartition;
-            return this;
-        }
-
-        /**
-         * Build the {@link MongoReadOptions}.
-         *
-         * @return a MongoReadOptions with the settings made for this builder.
-         */
-        public MongoReadOptions build() {
-            return new MongoReadOptions(
-                    fetchSize,
-                    cursorBatchSize,
-                    noCursorTimeout,
-                    partitionStrategy,
-                    partitionSize,
-                    samplesPerPartition);
-        }
     }
 }

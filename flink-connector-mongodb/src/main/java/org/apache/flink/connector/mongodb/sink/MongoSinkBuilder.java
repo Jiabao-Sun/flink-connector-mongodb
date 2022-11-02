@@ -20,7 +20,9 @@ package org.apache.flink.connector.mongodb.sink;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
+import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptionsBuilder;
 import org.apache.flink.connector.mongodb.sink.config.MongoWriteOptions;
+import org.apache.flink.connector.mongodb.sink.config.MongoWriteOptionsBuilder;
 import org.apache.flink.connector.mongodb.sink.writer.serializer.MongoSerializationSchema;
 import org.apache.flink.util.InstantiationUtil;
 
@@ -37,8 +39,8 @@ import static org.apache.flink.util.Preconditions.checkState;
 @PublicEvolving
 public class MongoSinkBuilder<IN> {
 
-    private final MongoConnectionOptions.MongoConnectionOptionsBuilder connectionOptionsBuilder;
-    private final MongoWriteOptions.MongoWriteOptionsBuilder writeOptionsBuilder;
+    private final MongoConnectionOptionsBuilder connectionOptionsBuilder;
+    private final MongoWriteOptionsBuilder writeOptionsBuilder;
 
     private MongoSerializationSchema<IN> serializationSchema;
 

@@ -19,8 +19,6 @@ package org.apache.flink.connector.mongodb.common.config;
 
 import org.apache.flink.annotation.PublicEvolving;
 
-import com.mongodb.ConnectionString;
-
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -34,7 +32,7 @@ public class MongoConnectionOptions implements Serializable {
     private final String database;
     private final String collection;
 
-    private MongoConnectionOptions(String uri, String database, String collection) {
+    MongoConnectionOptions(String uri, String database, String collection) {
         this.uri = checkNotNull(uri);
         this.database = checkNotNull(database);
         this.collection = checkNotNull(collection);
@@ -73,55 +71,5 @@ public class MongoConnectionOptions implements Serializable {
 
     public static MongoConnectionOptionsBuilder builder() {
         return new MongoConnectionOptionsBuilder();
-    }
-
-    /** Builder for {@link MongoConnectionOptions}. */
-    public static class MongoConnectionOptionsBuilder {
-        private String uri;
-        private String database;
-        private String collection;
-
-        /**
-         * Sets the connection string of MongoDB.
-         *
-         * @param uri connection string of MongoDB
-         * @return this builder
-         */
-        public MongoConnectionOptionsBuilder setUri(String uri) {
-            this.uri = new ConnectionString(uri).getConnectionString();
-            return this;
-        }
-
-        /**
-         * Sets the database of MongoDB.
-         *
-         * @param database the database to sink of MongoDB.
-         * @return this builder
-         */
-        public MongoConnectionOptionsBuilder setDatabase(String database) {
-            this.database = checkNotNull(database, "The database of MongoDB must not be null");
-            return this;
-        }
-
-        /**
-         * Sets the collection of MongoDB.
-         *
-         * @param collection the collection to sink of MongoDB.
-         * @return this builder
-         */
-        public MongoConnectionOptionsBuilder setCollection(String collection) {
-            this.collection =
-                    checkNotNull(collection, "The collection of MongoDB must not be null");
-            return this;
-        }
-
-        /**
-         * Build the {@link MongoConnectionOptions}.
-         *
-         * @return a MongoConnectionOptions with the settings made for this builder.
-         */
-        public MongoConnectionOptions build() {
-            return new MongoConnectionOptions(uri, database, collection);
-        }
     }
 }

@@ -22,6 +22,7 @@ import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
 import org.apache.flink.connector.mongodb.sink.config.MongoWriteOptions;
+import org.apache.flink.connector.mongodb.sink.config.MongoWriteOptionsBuilder;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
 import org.apache.flink.connector.mongodb.table.config.MongoConfiguration;
 import org.apache.flink.table.catalog.ResolvedSchema;
@@ -44,21 +45,21 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.BULK_FLUSH_INTERVAL;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.BULK_FLUSH_MAX_ACTIONS;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.COLLECTION;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.DATABASE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.DELIVERY_GUARANTEE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.LOOKUP_RETRY_INTERVAL;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_CURSOR_BATCH_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_CURSOR_NO_TIMEOUT;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_FETCH_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_SAMPLES;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_SIZE;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SCAN_PARTITION_STRATEGY;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SINK_MAX_RETRIES;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.SINK_RETRY_INTERVAL;
-import static org.apache.flink.connector.mongodb.table.config.MongoConnectorOptions.URI;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.BULK_FLUSH_INTERVAL;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.BULK_FLUSH_MAX_ACTIONS;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.COLLECTION;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.DATABASE;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.DELIVERY_GUARANTEE;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.LOOKUP_RETRY_INTERVAL;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_CURSOR_BATCH_SIZE;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_CURSOR_NO_TIMEOUT;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_FETCH_SIZE;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_PARTITION_SAMPLES;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_PARTITION_SIZE;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SCAN_PARTITION_STRATEGY;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SINK_MAX_RETRIES;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.SINK_RETRY_INTERVAL;
+import static org.apache.flink.connector.mongodb.table.MongoConnectorOptions.URI;
 import static org.apache.flink.table.factories.FactoryUtil.SINK_PARALLELISM;
 
 /**
@@ -191,7 +192,7 @@ public class MongoDynamicTableFactory
     }
 
     private MongoWriteOptions getWriteOptions(MongoConfiguration configuration) {
-        MongoWriteOptions.MongoWriteOptionsBuilder builder =
+        MongoWriteOptionsBuilder builder =
                 MongoWriteOptions.builder()
                         .setBulkFlushMaxActions(configuration.getBulkFlushMaxActions())
                         .setBulkFlushIntervalMs(configuration.getBulkFlushIntervalMs())

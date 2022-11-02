@@ -20,7 +20,9 @@ package org.apache.flink.connector.mongodb.source;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.configuration.MemorySize;
 import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
+import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptionsBuilder;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
+import org.apache.flink.connector.mongodb.source.config.MongoReadOptionsBuilder;
 import org.apache.flink.connector.mongodb.source.enumerator.splitter.PartitionStrategy;
 import org.apache.flink.connector.mongodb.source.reader.deserializer.MongoDeserializationSchema;
 
@@ -42,8 +44,8 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 @PublicEvolving
 public class MongoSourceBuilder<OUT> {
 
-    private final MongoConnectionOptions.MongoConnectionOptionsBuilder connectionOptionsBuilder;
-    private final MongoReadOptions.MongoReadOptionsBuilder readOptionsBuilder;
+    private final MongoConnectionOptionsBuilder connectionOptionsBuilder;
+    private final MongoReadOptionsBuilder readOptionsBuilder;
 
     private List<String> projectedFields;
     private int limit = -1;
