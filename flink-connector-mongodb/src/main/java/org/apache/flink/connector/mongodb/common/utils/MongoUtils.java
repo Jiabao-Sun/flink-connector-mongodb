@@ -18,10 +18,13 @@
 package org.apache.flink.connector.mongodb.common.utils;
 
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.connector.mongodb.common.config.MongoConnectionOptions;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
@@ -33,6 +36,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
@@ -59,11 +63,26 @@ public class MongoUtils {
     private static final String KEY_PATTERN_OPTION = "keyPattern";
     private static final String MAX_CHUNK_SIZE_OPTION = "maxChunkSize";
 
-    private static final String CONFIG_DATABASE = "config";
-    private static final String COLLECTIONS_COLLECTION = "collections";
-    private static final String CHUNKS_COLLECTION = "chunks";
+    private static final MongoNamespace CONFIG_COLLECTIONS =
+            new MongoNamespace("config.collections");
+    private static final MongoNamespace CONFIG_CHUNKS = new MongoNamespace("config.chunks");
 
     private MongoUtils() {}
+
+    public static MongoClient clientFor(MongoConnectionOptions connectionOptions) {
+        return MongoClients.create(connectionOptions.getUri());
+    }
+
+    public static MongoDatabase databaseFor(MongoClient mongoClient, String database) {
+        return mongoClient.getDatabase(database);
+    }
+
+    public static MongoCollection<BsonDocument> collectionFor(
+            MongoClient mongoClient, MongoNamespace namespace) {
+        return databaseFor(mongoClient, namespace.getDatabaseName())
+                .getCollection(namespace.getCollectionName())
+                .withDocumentClass(BsonDocument.class);
+    }
 
     public static BsonDocument collStats(MongoClient mongoClient, MongoNamespace namespace) {
         BsonDocument collStatsCommand =
@@ -74,15 +93,15 @@ public class MongoUtils {
     }
 
     public static BsonDocument splitVector(
-            MongoClient mongoClient,
+            Function<String, MongoDatabase> databaseProvider,
             MongoNamespace namespace,
             BsonDocument keyPattern,
             int maxChunkSizeMB) {
-        return splitVector(mongoClient, namespace, keyPattern, maxChunkSizeMB, null, null);
+        return splitVector(databaseProvider, namespace, keyPattern, maxChunkSizeMB, null, null);
     }
 
     public static BsonDocument splitVector(
-            MongoClient mongoClient,
+            Function<String, MongoDatabase> databaseProvider,
             MongoNamespace namespace,
             BsonDocument keyPattern,
             int maxChunkSizeMB,
@@ -94,19 +113,17 @@ public class MongoUtils {
                         .append(MAX_CHUNK_SIZE_OPTION, new BsonInt32(maxChunkSizeMB));
         Optional.ofNullable(min).ifPresent(v -> splitVectorCommand.append(MIN_FIELD, v));
         Optional.ofNullable(max).ifPresent(v -> splitVectorCommand.append(MAX_FIELD, v));
-        return mongoClient
-                .getDatabase(namespace.getDatabaseName())
+
+        return databaseProvider
+                .apply(namespace.getDatabaseName())
                 .runCommand(splitVectorCommand, BsonDocument.class);
     }
 
     @Nullable
     public static BsonDocument readCollectionMetadata(
-            MongoClient mongoClient, MongoNamespace namespace) {
-        MongoCollection<BsonDocument> collection =
-                mongoClient
-                        .getDatabase(CONFIG_DATABASE)
-                        .getCollection(COLLECTIONS_COLLECTION)
-                        .withDocumentClass(BsonDocument.class);
+            Function<MongoNamespace, MongoCollection<BsonDocument>> collectionProvider,
+            MongoNamespace namespace) {
+        MongoCollection<BsonDocument> collection = collectionProvider.apply(CONFIG_COLLECTIONS);
 
         return collection
                 .find(eq(ID_FIELD, namespace.getFullName()))
@@ -120,12 +137,9 @@ public class MongoUtils {
     }
 
     public static List<BsonDocument> readChunks(
-            MongoClient mongoClient, BsonDocument collectionMetadata) {
-        MongoCollection<BsonDocument> chunks =
-                mongoClient
-                        .getDatabase(CONFIG_DATABASE)
-                        .getCollection(CHUNKS_COLLECTION)
-                        .withDocumentClass(BsonDocument.class);
+            Function<MongoNamespace, MongoCollection<BsonDocument>> collectionProvider,
+            BsonDocument collectionMetadata) {
+        MongoCollection<BsonDocument> chunks = collectionProvider.apply(CONFIG_CHUNKS);
 
         Bson filter =
                 or(

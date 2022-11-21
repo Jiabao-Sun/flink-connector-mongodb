@@ -19,14 +19,18 @@
 package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.connector.mongodb.common.utils.MongoUtils;
 import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
+
+import java.util.function.Function;
 
 import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.AVG_OBJ_SIZE_FIELD;
 import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.COUNT_FIELD;
@@ -43,8 +47,11 @@ public class MongoSplitContext {
     /** Read options of MongoDB. */
     private final MongoReadOptions readOptions;
 
-    /** Client of MongoDB. */
-    private final MongoClient mongoClient;
+    /** Database provider of MongoDB. */
+    private final Function<String, MongoDatabase> databaseProvider;
+
+    /** Collection provider of MongoDB. */
+    private final Function<MongoNamespace, MongoCollection<BsonDocument>> collectionProvider;
 
     /** Namespace of MongoDB, eg. db.coll. */
     private final MongoNamespace namespace;
@@ -63,14 +70,16 @@ public class MongoSplitContext {
 
     public MongoSplitContext(
             MongoReadOptions readOptions,
-            MongoClient mongoClient,
+            Function<String, MongoDatabase> databaseProvider,
+            Function<MongoNamespace, MongoCollection<BsonDocument>> collectionProvider,
             MongoNamespace namespace,
             boolean sharded,
             long count,
             long size,
             long avgObjSize) {
         this.readOptions = readOptions;
-        this.mongoClient = mongoClient;
+        this.databaseProvider = databaseProvider;
+        this.collectionProvider = collectionProvider;
         this.namespace = namespace;
         this.sharded = sharded;
         this.count = count;
@@ -85,7 +94,8 @@ public class MongoSplitContext {
             BsonDocument collStats) {
         return new MongoSplitContext(
                 readOptions,
-                mongoClient,
+                (database) -> MongoUtils.databaseFor(mongoClient, database),
+                (ns) -> MongoUtils.collectionFor(mongoClient, ns),
                 namespace,
                 collStats.getBoolean(SHARDED_FIELD, BsonBoolean.FALSE).getValue(),
                 collStats.getNumber(COUNT_FIELD, new BsonInt64(0)).longValue(),
@@ -93,8 +103,29 @@ public class MongoSplitContext {
                 collStats.getNumber(AVG_OBJ_SIZE_FIELD, new BsonInt64(0)).longValue());
     }
 
-    public MongoClient getMongoClient() {
-        return mongoClient;
+    public static MongoSplitContext of(
+            MongoReadOptions readOptions,
+            Function<String, MongoDatabase> databaseProvider,
+            Function<MongoNamespace, MongoCollection<BsonDocument>> collectionProvider,
+            MongoNamespace namespace,
+            BsonDocument collStats) {
+        return new MongoSplitContext(
+                readOptions,
+                databaseProvider,
+                collectionProvider,
+                namespace,
+                collStats.getBoolean(SHARDED_FIELD, BsonBoolean.FALSE).getValue(),
+                collStats.getNumber(COUNT_FIELD, new BsonInt64(0)).longValue(),
+                collStats.getNumber(SIZE_FIELD, new BsonInt64(0)).longValue(),
+                collStats.getNumber(AVG_OBJ_SIZE_FIELD, new BsonInt64(0)).longValue());
+    }
+
+    public Function<String, MongoDatabase> getDatabaseProvider() {
+        return databaseProvider;
+    }
+
+    public Function<MongoNamespace, MongoCollection<BsonDocument>> getCollectionProvider() {
+        return collectionProvider;
     }
 
     public MongoReadOptions getReadOptions() {
@@ -111,13 +142,6 @@ public class MongoSplitContext {
 
     public MongoNamespace getMongoNamespace() {
         return namespace;
-    }
-
-    public MongoCollection<BsonDocument> getMongoCollection() {
-        return mongoClient
-                .getDatabase(namespace.getDatabaseName())
-                .getCollection(namespace.getCollectionName())
-                .withDocumentClass(BsonDocument.class);
     }
 
     public boolean isSharded() {

@@ -91,7 +91,8 @@ public class MongoSampleSplitter {
 
         List<BsonDocument> samples =
                 splitContext
-                        .getMongoCollection()
+                        .getCollectionProvider()
+                        .apply(namespace)
                         .aggregate(
                                 Arrays.asList(
                                         Aggregates.sample(numberOfSamples),

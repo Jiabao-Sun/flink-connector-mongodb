@@ -24,7 +24,6 @@ import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
 
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoNamespace;
-import com.mongodb.client.MongoClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
@@ -65,7 +64,6 @@ public class MongoSplitVectorSplitter {
     private MongoSplitVectorSplitter() {}
 
     public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
-        MongoClient mongoClient = splitContext.getMongoClient();
         MongoNamespace namespace = splitContext.getMongoNamespace();
         MongoReadOptions readOptions = splitContext.getReadOptions();
 
@@ -77,7 +75,12 @@ public class MongoSplitVectorSplitter {
 
         BsonDocument splitResult;
         try {
-            splitResult = splitVector(mongoClient, namespace, keyPattern, maxChunkSizeMB);
+            splitResult =
+                    splitVector(
+                            splitContext.getDatabaseProvider(),
+                            namespace,
+                            keyPattern,
+                            maxChunkSizeMB);
         } catch (MongoCommandException e) {
             if (e.getErrorCode() == UNAUTHORIZED_ERROR) {
                 LOG.warn(

@@ -22,7 +22,6 @@ import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.MongoQueryException;
-import com.mongodb.client.MongoClient;
 import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,19 +62,19 @@ public class MongoShardedSplitter {
 
     public Collection<MongoScanSourceSplit> split(MongoSplitContext splitContext) {
         MongoNamespace namespace = splitContext.getMongoNamespace();
-        MongoClient mongoClient = splitContext.getMongoClient();
 
         List<BsonDocument> chunks;
         BsonDocument collectionMetadata;
         try {
-            collectionMetadata = readCollectionMetadata(mongoClient, namespace);
+            collectionMetadata =
+                    readCollectionMetadata(splitContext.getCollectionProvider(), namespace);
             if (!isValidShardedCollection(collectionMetadata)) {
                 LOG.warn(
                         "Collection {} does not appear to be sharded, fallback to SampleSplitter.",
                         namespace);
                 return MongoSampleSplitter.INSTANCE.split(splitContext);
             }
-            chunks = readChunks(mongoClient, collectionMetadata);
+            chunks = readChunks(splitContext.getCollectionProvider(), collectionMetadata);
         } catch (MongoQueryException e) {
             if (e.getErrorCode() == UNAUTHORIZED_ERROR) {
                 LOG.warn(
