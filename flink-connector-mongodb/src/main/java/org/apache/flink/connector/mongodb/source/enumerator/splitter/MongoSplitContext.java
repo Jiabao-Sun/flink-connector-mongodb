@@ -26,6 +26,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
 import org.bson.BsonInt64;
 
 import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.AVG_OBJ_SIZE_FIELD;
@@ -59,7 +60,7 @@ public class MongoSplitContext {
     private final long size;
 
     /** The average size(bytes) of an object in the collection. */
-    private final long avgObjSize;
+    private final double avgObjSize;
 
     public MongoSplitContext(
             MongoReadOptions readOptions,
@@ -68,7 +69,7 @@ public class MongoSplitContext {
             boolean sharded,
             long count,
             long size,
-            long avgObjSize) {
+            double avgObjSize) {
         this.readOptions = readOptions;
         this.mongoClient = mongoClient;
         this.namespace = namespace;
@@ -90,7 +91,7 @@ public class MongoSplitContext {
                 collStats.getBoolean(SHARDED_FIELD, BsonBoolean.FALSE).getValue(),
                 collStats.getNumber(COUNT_FIELD, new BsonInt64(0)).longValue(),
                 collStats.getNumber(SIZE_FIELD, new BsonInt64(0)).longValue(),
-                collStats.getNumber(AVG_OBJ_SIZE_FIELD, new BsonInt64(0)).longValue());
+                collStats.getNumber(AVG_OBJ_SIZE_FIELD, new BsonDouble(0.0d)).doubleValue());
     }
 
     public MongoClient getMongoClient() {
@@ -132,7 +133,7 @@ public class MongoSplitContext {
         return size;
     }
 
-    public long getAvgObjSize() {
+    public double getAvgObjSize() {
         return avgObjSize;
     }
 }

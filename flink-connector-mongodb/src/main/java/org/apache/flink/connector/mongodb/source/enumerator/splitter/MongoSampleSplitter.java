@@ -75,14 +75,14 @@ public class MongoSampleSplitter {
         long partitionSizeInBytes = readOptions.getPartitionSize().getBytes();
         int samplesPerPartition = readOptions.getSamplesPerPartition();
 
-        long avgObjSizeInBytes = splitContext.getAvgObjSize();
-        if (avgObjSizeInBytes == 0L) {
+        double avgObjSizeInBytes = splitContext.getAvgObjSize();
+        if (avgObjSizeInBytes == 0.0d) {
             LOG.info(
                     "{} seems to be an empty collection, Returning a single partition.", namespace);
             return MongoSingleSplitter.INSTANCE.split(splitContext);
         }
 
-        long numDocumentsPerPartition = partitionSizeInBytes / avgObjSizeInBytes;
+        int numDocumentsPerPartition = (int) Math.floor(partitionSizeInBytes / avgObjSizeInBytes);
         if (numDocumentsPerPartition >= count) {
             LOG.info(
                     "Fewer documents ({}) than the number of documents per partition ({}), Returning a single partition.",
@@ -92,7 +92,7 @@ public class MongoSampleSplitter {
         }
 
         int numberOfSamples =
-                (int) Math.ceil((samplesPerPartition * count * 1.0d) / numDocumentsPerPartition);
+                (int) Math.ceil(samplesPerPartition * count * 1.0d / numDocumentsPerPartition);
 
         List<BsonDocument> samples =
                 splitContext
