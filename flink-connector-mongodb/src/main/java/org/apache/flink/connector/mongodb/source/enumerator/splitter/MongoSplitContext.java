@@ -50,6 +50,9 @@ public class MongoSplitContext {
     /** Namespace of MongoDB, eg. db.coll. */
     private final MongoNamespace namespace;
 
+    /** Limit of documents . */
+    private final int limit;
+
     /** Is a sharded collection. */
     private final boolean sharded;
 
@@ -66,6 +69,7 @@ public class MongoSplitContext {
             MongoReadOptions readOptions,
             MongoClient mongoClient,
             MongoNamespace namespace,
+            int limit,
             boolean sharded,
             long count,
             long size,
@@ -73,6 +77,7 @@ public class MongoSplitContext {
         this.readOptions = readOptions;
         this.mongoClient = mongoClient;
         this.namespace = namespace;
+        this.limit = limit;
         this.sharded = sharded;
         this.count = count;
         this.size = size;
@@ -83,11 +88,13 @@ public class MongoSplitContext {
             MongoReadOptions readOptions,
             MongoClient mongoClient,
             MongoNamespace namespace,
+            int limit,
             BsonDocument collStats) {
         return new MongoSplitContext(
                 readOptions,
                 mongoClient,
                 namespace,
+                limit,
                 collStats.getBoolean(SHARDED_FIELD, BsonBoolean.FALSE).getValue(),
                 collStats.getNumber(COUNT_FIELD, new BsonInt64(0)).longValue(),
                 collStats.getNumber(SIZE_FIELD, new BsonInt64(0)).longValue(),
@@ -135,5 +142,13 @@ public class MongoSplitContext {
 
     public double getAvgObjSize() {
         return avgObjSize;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public boolean isLimitPushedDown() {
+        return limit > 0;
     }
 }

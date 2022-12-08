@@ -45,15 +45,13 @@ public class MongoSplitters implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(MongoSplitters.class);
 
     private final MongoReadOptions readOptions;
-    private final boolean limitPushedDown;
+    private final int limit;
     private final MongoClient mongoClient;
 
     public MongoSplitters(
-            MongoConnectionOptions connectionOptions,
-            MongoReadOptions readOptions,
-            boolean limitPushedDown) {
+            MongoConnectionOptions connectionOptions, MongoReadOptions readOptions, int limit) {
         this.readOptions = readOptions;
-        this.limitPushedDown = limitPushedDown;
+        this.limit = limit;
         this.mongoClient = MongoClients.create(connectionOptions.getUri());
     }
 
@@ -67,12 +65,11 @@ public class MongoSplitters implements Closeable {
         }
 
         MongoSplitContext splitContext =
-                MongoSplitContext.of(readOptions, mongoClient, namespace, collStats);
+                MongoSplitContext.of(readOptions, mongoClient, namespace, limit, collStats);
 
         PartitionStrategy strategy = readOptions.getPartitionStrategy();
-        if (limitPushedDown) {
-            LOG.info(
-                    "Limit {} is applied, using single split partition strategy.", limitPushedDown);
+        if (splitContext.isLimitPushedDown()) {
+            LOG.info("Limit {} is applied, using single split partition strategy.", limit);
             strategy = PartitionStrategy.SINGLE;
         }
 

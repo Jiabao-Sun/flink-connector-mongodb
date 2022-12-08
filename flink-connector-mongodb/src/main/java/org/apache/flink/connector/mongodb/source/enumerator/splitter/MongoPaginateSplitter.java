@@ -17,14 +17,14 @@
 
 package org.apache.flink.connector.mongodb.source.enumerator.splitter;
 
+import org.apache.flink.annotation.Internal;
+import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
+import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
+
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
-
-import org.apache.flink.connector.mongodb.source.config.MongoReadOptions;
-import org.apache.flink.connector.mongodb.source.split.MongoScanSourceSplit;
-
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -34,9 +34,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.BSON_MIN_KEY;
 import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.ID_FIELD;
+import static org.apache.flink.connector.mongodb.common.utils.MongoConstants.ID_HINT;
 
 /** Paginates a collection into partitions. */
+@Internal
 public class MongoPaginateSplitter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoPaginateSplitter.class);
@@ -68,12 +71,17 @@ public class MongoPaginateSplitter {
             return MongoSingleSplitter.INSTANCE.split(splitContext);
         }
 
-        Bson projection =  Projections.include(ID_FIELD);
+        Bson projection = Projections.include(ID_FIELD);
         List<Bson> aggregationPipeline = new ArrayList<>();
         aggregationPipeline.add(Aggregates.project(projection));
         aggregationPipeline.add(Aggregates.sort(Sorts.ascending(ID_FIELD)));
 
         long numberOfPartitions = (count / numDocumentsPerPartition) + 1;
+        if (splitContext.isLimitPushedDown()) {
+            if (numDocumentsPerPartition <= splitContext.getLimit()) {
+                numberOfPartitions = 1;
+            }
+        }
 
         List<BsonDocument> upperBounds = new ArrayList<>();
         for (int i = 0; i < numberOfPartitions; i++) {
@@ -84,8 +92,7 @@ public class MongoPaginateSplitter {
                 BsonDocument previous = upperBounds.get(upperBounds.size() - 1);
                 BsonDocument matchFilter = new BsonDocument();
                 if (previous.containsKey(ID_FIELD)) {
-                    matchFilter.put(
-                            ID_FIELD, new BsonDocument("$gte", previous.get(ID_FIELD)));
+                    matchFilter.put(ID_FIELD, new BsonDocument("$gte", previous.get(ID_FIELD)));
                 }
                 boundaryPipeline.add(Aggregates.match(matchFilter));
             }
@@ -93,11 +100,12 @@ public class MongoPaginateSplitter {
             boundaryPipeline.add(Aggregates.skip(numDocumentsPerPartition));
             boundaryPipeline.add(Aggregates.limit(1));
 
-            BsonDocument boundary = splitContext
-                    .getMongoCollection()
-                    .aggregate(boundaryPipeline)
-                    .allowDiskUse(true)
-                    .first();
+            BsonDocument boundary =
+                    splitContext
+                            .getMongoCollection()
+                            .aggregate(boundaryPipeline)
+                            .allowDiskUse(true)
+                            .first();
 
             if (boundary == null) {
                 break;
@@ -105,6 +113,24 @@ public class MongoPaginateSplitter {
             upperBounds.add(boundary);
         }
 
-        return upperBounds;
+        List<MongoScanSourceSplit> splits = new ArrayList<>();
+        BsonDocument lowerBound = new BsonDocument(ID_FIELD, BSON_MIN_KEY);
+        for (int i = 0; i < upperBounds.size(); i++) {
+            splits.add(createSplit(namespace, i, lowerBound, upperBounds.get(i)));
+            lowerBound = upperBounds.get(i);
+        }
+
+        return splits;
+    }
+
+    private MongoScanSourceSplit createSplit(
+            MongoNamespace ns, int index, BsonDocument min, BsonDocument max) {
+        return new MongoScanSourceSplit(
+                String.format("%s_%d", ns, index),
+                ns.getDatabaseName(),
+                ns.getCollectionName(),
+                min,
+                max,
+                ID_HINT);
     }
 }
