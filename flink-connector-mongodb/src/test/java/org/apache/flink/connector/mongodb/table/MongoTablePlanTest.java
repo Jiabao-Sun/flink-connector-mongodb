@@ -24,6 +24,7 @@ import org.apache.flink.table.planner.utils.TableTestBase;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.time.ZoneId;
 
@@ -33,6 +34,7 @@ public class MongoTablePlanTest extends TableTestBase {
     private final StreamTableTestUtil util = streamTestUtil(TableConfig.getDefault());
 
     @Before
+    @BeforeEach
     public void setup() {
         TableEnvironment tEnv = util.tableEnv();
         tEnv.getConfig().setLocalTimeZone(ZoneId.of("UTC"));
