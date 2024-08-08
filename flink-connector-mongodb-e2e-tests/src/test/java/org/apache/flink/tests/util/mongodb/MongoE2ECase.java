@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.connector.mongodb.testutils.MongoTestUtil.MONGODB_HOSTNAME;
-import static org.apache.flink.connector.mongodb.testutils.MongoTestUtil.MONGO_4_0;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** End-to-end test for the MongoDB connectors. */
@@ -69,7 +68,7 @@ class MongoE2ECase {
 
     @Container
     private static final MongoDBContainer MONGO_CONTAINER =
-            new MongoDBContainer(MONGO_4_0)
+            new MongoDBContainer("mongo:7.0.12")
                     .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .withNetwork(NETWORK)
                     .withNetworkAliases(MONGODB_HOSTNAME);
