@@ -19,6 +19,7 @@
 package org.apache.flink.tests.util.mongodb;
 
 import org.apache.flink.api.common.time.Deadline;
+import org.apache.flink.connector.mongodb.testutils.MongoTestUtil;
 import org.apache.flink.connector.testframe.container.FlinkContainers;
 import org.apache.flink.connector.testframe.container.FlinkContainersSettings;
 import org.apache.flink.connector.testframe.container.TestcontainersSettings;
@@ -38,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.connector.mongodb.testutils.MongoTestUtil.MONGODB_HOSTNAME;
-import static org.apache.flink.connector.mongodb.testutils.MongoTestUtil.MONGO_4_0;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** End-to-end test for the MongoDB connectors. */
@@ -69,8 +68,7 @@ class MongoE2ECase {
 
     @Container
     private static final MongoDBContainer MONGO_CONTAINER =
-            new MongoDBContainer(MONGO_4_0)
-                    .withLogConsumer(new Slf4jLogConsumer(LOG))
+            MongoTestUtil.createMongoDBContainer(LOG)
                     .withNetwork(NETWORK)
                     .withNetworkAliases(MONGODB_HOSTNAME);
 
