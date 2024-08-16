@@ -29,11 +29,11 @@ jobs:
     strategy:
       matrix:
         mongodb: [ mongodb4, mongodb5, mongodb6, mongodb7 ]
-        flink: [ 1.19-SNAPSHOT, 1.20-SNAPSHOT ]
-        jdk: [ '8, 11, 17, 21' ]
-        include:
+        flink: [ 1.18-SNAPSHOT, 1.19-SNAPSHOT, 1.20-SNAPSHOT ]
+        jdk: [ '8, 11, 17', '21' ]
+        exclude:
           - flink: 1.18-SNAPSHOT
-            jdk: '8, 11, 17'
+            jdk: '21'
 
     uses: apache/flink-connector-shared-utils/.github/workflows/ci.yml@ci_utils
     with:
